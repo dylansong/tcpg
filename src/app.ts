@@ -1,75 +1,64 @@
-import { GameState,GameConf,ActorState } from './lib/interface/index';
+import { GameConf, ActorState } from './lib/interface/index';
 import { Game } from './lib/game';
 import { Actor } from './lib/actor';
 import { createStore, Action } from 'redux';
 
 
 
-function makeInitialState():GameState{
-  return {
-    status:'start',
-    actors:[{
-      id:'rect1',
-      type:'rect',
-      x:50,
-      y:50,
-      src:'',
-      width:50,
-      height:50,
-      gravity:1,
-      speed:1,
-      zoom:2,
-      color:'blue',
-      data:{}
-    }]
-  }
-}
 
 
 
-function gameTree(state=makeInitialState(),action:Action){
-  switch(action.type){
-    case 'start':
-    state.status = 'start';
-    return state;
-    case 'right':
-    state.actors[0].x++;
-    return state;
-    case 'left':
-    state.actors[0].x--;
-    return state;
-    default:
-    return state
-  }    
-}
 
-const store = createStore(gameTree);
 
 const paddleGameConf:GameConf = {
-  width:500,height:500,background:'white',border:'1px dotted black',state:makeInitialState()
+  width:500,height:500,background:'white',border:'1px dotted black'
 }
 
 const canvas = document.querySelector('canvas');
-const paddleGame = new Game(canvas,paddleGameConf,store);
-paddleGame.init();
-store.subscribe(paddleGame.render.bind(paddleGame));
+const paddleGame = new Game(canvas,paddleGameConf);
 
-function loop(){
-  console.log('h')
-  if(store.getState().actors[0].x<=0){
-    store.dispatch({type:'right'});
-  }else if(store.getState().actors[0].x>=500){
-    store.dispatch({type:'left'});
-  }else{
-    store.dispatch({type:'right'});
-  }
-  requestAnimationFrame(loop)
 
+const redInitialState:ActorState = {
+  type:'image',
+  x:200,
+  y:200,
+  width:150,
+  height:150,
+  color:'red',
+  speed:5,
+  gravity:2,
+  imgsrc:'https://target.scene7.com/is/image/Target/52702455_Alt01?wid=488&hei=488&fmt=pjpeg'
 }
 
-// loop()
+
+
+const redRect = new Actor(paddleGame.ctx,redInitialState)
+paddleGame.addActor(redRect);
 
 
 
+
+
+for(let i=1;i<20;i++){
+  let blippiInitialState:ActorState = {
+    type:'image',
+    x:Math.random()*500,
+    y:Math.random()*500,
+    width:50,
+    height:50,
+    color:'red',
+    speed:3,
+    gravity:5,
+    imgsrc:'https://i.pinimg.com/736x/ba/7c/d2/ba7cd207c8bba84cc175cc8aeaca1753--programming-parents.jpg'
+  }
+  let blippi = new Actor(paddleGame.ctx,blippiInitialState)
+  paddleGame.addActor(blippi);
+}
+
+const startBtn = document.querySelector('.start-btn');
+startBtn.addEventListener('click',()=>{
+  paddleGame.startUpdate();
+  paddleGame.startLoop();
+})
 
 
